@@ -1,8 +1,17 @@
+import 'package:book_bank/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
+import 'dart:convert';
+
+import 'book_page.dart';
 
 class RegisterPage extends StatelessWidget {
-  const RegisterPage({Key? key}) : super(key: key);
+  RegisterPage({Key? key}) : super(key: key);
 
+  final  usernameController = TextEditingController();
+  final  passwordController = TextEditingController();
+  final  cpasswordController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return  Container(
@@ -44,7 +53,9 @@ class RegisterPage extends StatelessWidget {
                         Container(
                           width: 400,
                           child: TextField(
+                            controller: usernameController,
                             obscureText: false,
+                            cursorColor: Color(0xFF7E7E7E),
                             decoration: InputDecoration(
                               fillColor: Colors.white,
                               filled: true,
@@ -65,7 +76,9 @@ class RegisterPage extends StatelessWidget {
                         Container(
                           width: 400,
                           child: TextField(
+                            controller: passwordController,
                             obscureText: true,
+                            cursorColor: Color(0xFF7E7E7E),
                             decoration: InputDecoration(
                               fillColor: Colors.white,
                               filled: true,
@@ -85,8 +98,9 @@ class RegisterPage extends StatelessWidget {
                         ),
                         Container(
                           width: 400,
-                          child: TextField(
+                          child: TextField(controller: cpasswordController,
                             obscureText: true,
+                            cursorColor: Color(0xFF7E7E7E),
                             decoration: InputDecoration(
                               fillColor: Colors.white,
                               filled: true,
@@ -133,7 +147,7 @@ class RegisterPage extends StatelessWidget {
                                   onPrimary: Colors.black,
                                 ),
                                 onPressed: () {
-                                  print('Pressed');
+
                                 },
                                 child: Text(
                                   'Register',
@@ -161,3 +175,27 @@ class RegisterPage extends StatelessWidget {
     );
   }
 }
+
+
+// if(passwordController.text == cpasswordController.text){
+// http.post(Uri.parse(baseUrl+'register'),
+// headers: {"Content-type": "application/json"},
+// body:"{'username':usernameController.text,'password':passwordController.text}",
+// ).then((res){
+// if(res.statusCode==200){
+// final message = jsonDecode(res.body);
+// print(message);
+// Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>BookPage(username: message['username'],)));
+// }
+// }
+// );
+// }
+
+// Future<void> makePostRequest() async {
+//   final url = Uri.parse(baseUrl+'register');
+//   final headers = {"Content-type": "application/json"};
+//   final json = '{"username":usernameController.text, "password":passwordController.text}';
+//   final response = await post(url, headers: headers, body: json);
+//   print('Status code: ${response.statusCode}');
+//   print('Body: ${response.body}');
+// }
