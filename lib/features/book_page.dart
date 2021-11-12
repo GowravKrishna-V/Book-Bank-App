@@ -21,6 +21,18 @@ class BookPage extends StatelessWidget {
         actions: [
           IconButton(
               onPressed: () {
+
+              },
+              icon: Icon(
+                Icons.book,
+                color: Colors.black,
+                size: 30.0,
+              )),
+          SizedBox(
+            width: 15,
+          ),
+          IconButton(
+              onPressed: () {
                 userAlert(context);
               },
               icon: Icon(
@@ -31,26 +43,31 @@ class BookPage extends StatelessWidget {
         ],
         backgroundColor: Colors.orange.shade200,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(15.0),
-        child: GridView.count(
-          crossAxisCount: 4,
-          crossAxisSpacing: 5,
-          mainAxisSpacing: 10,
-          scrollDirection: Axis.vertical,
-          children: [
-            BookCard(imageUrl: 'https://storage.googleapis.com/lr-assets/_nielsen/400/9780141325545.jpg', bname: 'A Tale of Two Cities', author: 'Charles Dickens',),
-            BookCard(imageUrl: 'https://storage.googleapis.com/lr-assets/_nielsen/400/9780141325545.jpg', bname: 'A Tale of Two Cities', author: 'Charles Dickens',),
-            BookCard(imageUrl: 'https://storage.googleapis.com/lr-assets/_nielsen/400/9780141325545.jpg', bname: 'A Tale of Two Cities', author: 'Charles Dickens',),
-            BookCard(bname: 'A Tale of Two Cities', author: 'Charles Dickens',)
-          ],
-        ),
-      ),
+      body: SizedBox.shrink()
+      // Padding(
+      //   padding: const EdgeInsets.all(15.0),
+      //   child: GridView.count(
+      //     crossAxisCount: 4,
+      //     crossAxisSpacing: 5,
+      //     mainAxisSpacing: 10,
+      //     scrollDirection: Axis.vertical,
+      //     children: [
+      //       BookCard(imageUrl: 'https://storage.googleapis.com/lr-assets/_nielsen/400/9780141325545.jpg', bname: 'A Tale of Two Cities', author: 'Charles Dickens',),
+      //       BookCard(imageUrl: 'https://storage.googleapis.com/lr-assets/_nielsen/400/9780141325545.jpg', bname: 'A Tale of Two Cities', author: 'Charles Dickens',),
+      //       BookCard(imageUrl: 'https://storage.googleapis.com/lr-assets/_nielsen/400/9780141325545.jpg', bname: 'A Tale of Two Cities', author: 'Charles Dickens',),
+      //       BookCard(imageUrl: 'https://storage.googleapis.com/lr-assets/_nielsen/400/9780141325545.jpg', bname: 'A Tale of Two Cities', author: 'Charles Dickens',),
+      //       BookCard(imageUrl: 'https://storage.googleapis.com/lr-assets/_nielsen/400/9780141325545.jpg', bname: 'A Tale of Two Cities', author: 'Charles Dickens',),
+      //       BookCard(imageUrl: 'https://storage.googleapis.com/lr-assets/_nielsen/400/9780141325545.jpg', bname: 'A Tale of Two Cities', author: 'Charles Dickens',),
+      //       BookCard(imageUrl: 'https://storage.googleapis.com/lr-assets/_nielsen/400/9780141325545.jpg', bname: 'A Tale of Two Cities', author: 'Charles Dickens',),
+      //       BookCard(imageUrl: 'https://storage.googleapis.com/lr-assets/_nielsen/400/9780141325545.jpg', bname: 'A Tale of Two Cities', author: 'Charles Dickens',)
+      //     ],
+      //   ),
+      // ),
     );
   }
 }
 
-void testAlert(BuildContext context) {
+void buyAlert(BuildContext context) {
   var alert = AlertDialog(
     title: Center(
         child: Text(
@@ -93,7 +110,7 @@ void testAlert(BuildContext context) {
               onPrimary: Colors.black,
             ),
             onPressed: () {
-              Navigator.pop(context, 'testAlert');
+              Navigator.pop(context, 'buyAlert');
             },
             child: Text(
               'No',
@@ -137,7 +154,7 @@ void addAlert(BuildContext context) {
           ),
           onPressed: () {
             Navigator.pop(context, 'addAlert');
-            Navigator.pop(context, 'testAlert');
+            Navigator.pop(context, 'buyAlert');
           },
           child: Text(
             'Ok',
@@ -173,7 +190,7 @@ void userAlert(BuildContext context) {
         ),
     ),
     content: Padding(
-      padding: const EdgeInsets.only(left: 10.0),
+      padding: const EdgeInsets.only(left: 10.0, top: 15),
       child: TextField(
         obscureText: false,
         cursorColor: Color(0xFF7E7E7E),
@@ -191,6 +208,28 @@ void userAlert(BuildContext context) {
         ),
       ),
     ),
+    actions: [
+      Padding(
+        padding: const EdgeInsets.only(bottom: 15.0, right: 16.0),
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+            primary: Colors.red,
+            onPrimary: Colors.white,
+          ),
+          onPressed: () {
+            Navigator.pop(context, 'userAlert');
+            Navigator.pushReplacementNamed(context, 'loginPage');
+          },
+          child: Text(
+            'Log Out',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    ],
   );
 
   showDialog(
@@ -208,7 +247,7 @@ class BookCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton(
       onPressed: () {
-        testAlert(context);
+        buyAlert(context);
       },
       child: Container(
         decoration: BoxDecoration(

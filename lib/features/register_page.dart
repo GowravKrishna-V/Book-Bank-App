@@ -1,7 +1,9 @@
+import 'dart:io';
+
 import 'package:book_bank/constants.dart';
+import 'package:cool_alert/cool_alert.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:http/http.dart';
 import 'dart:convert';
 
 import 'book_page.dart';
@@ -9,12 +11,12 @@ import 'book_page.dart';
 class RegisterPage extends StatelessWidget {
   RegisterPage({Key? key}) : super(key: key);
 
-  final  usernameController = TextEditingController();
-  final  passwordController = TextEditingController();
-  final  cpasswordController = TextEditingController();
+  final usernameController = TextEditingController();
+  final passwordController = TextEditingController();
+  final cpasswordController = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    return  Container(
+    return Container(
       decoration: BoxDecoration(
         image: DecorationImage(
             image: AssetImage('images/Bookbg.jpg'), fit: BoxFit.cover),
@@ -98,7 +100,8 @@ class RegisterPage extends StatelessWidget {
                         ),
                         Container(
                           width: 400,
-                          child: TextField(controller: cpasswordController,
+                          child: TextField(
+                            controller: cpasswordController,
                             obscureText: true,
                             cursorColor: Color(0xFF7E7E7E),
                             decoration: InputDecoration(
@@ -121,11 +124,13 @@ class RegisterPage extends StatelessWidget {
                         Row(
                           children: [
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 34.0),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 34.0),
                               child: TextButton(
                                 onPressed: () {
-                                  Navigator.pushReplacementNamed(context, 'loginPage');
-                                  },
+                                  Navigator.pushReplacementNamed(
+                                      context, 'loginPage');
+                                },
                                 child: Text(
                                   'Login?',
                                   style: TextStyle(
@@ -147,7 +152,36 @@ class RegisterPage extends StatelessWidget {
                                   onPrimary: Colors.black,
                                 ),
                                 onPressed: () {
-
+                                  if (passwordController.text !=
+                                      cpasswordController.text)
+                                    CoolAlert.show(
+                                      context: context,
+                                      type: CoolAlertType.warning,
+                                      text: "Enter your password correctly!",
+                                    );
+                                  else
+                                    registerUser(usernameController.text,
+                                            passwordController.text)
+                                        .then((value) => {
+                                              if (value)
+                                                Navigator.pushReplacement(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            BookPage()))
+                                              else
+                                                CoolAlert.show(
+                                                  backgroundColor:
+                                                      Colors.orange.shade200,
+                                                  confirmBtnColor:
+                                                      Colors.orange.shade200,
+                                                  barrierDismissible: true,
+                                                  context: context,
+                                                  type: CoolAlertType.error,
+                                                  text:
+                                                      "Couldn\'t register user",
+                                                )
+                                            });
                                 },
                                 child: Text(
                                   'Register',
@@ -176,6 +210,26 @@ class RegisterPage extends StatelessWidget {
   }
 }
 
+Future<bool> registerUser(String name, String password) async {
+  var dio = Dio();
+  var response;
+  try {
+    response = await dio.post(
+      baseUrl + 'register',
+      options: Options(headers: {
+        HttpHeaders.contentTypeHeader: "application/json",
+      }),
+      data: jsonEncode({'username': name, 'password': password}),
+    );
+    print(response);
+  } catch (e) {
+    return false;
+  }
+  if (response.statusCode == 200 &&
+      !response.data.isEmpty &&
+      !response.data.containsKey('message')) return true;
+  return false;
+}
 
 // if(passwordController.text == cpasswordController.text){
 // http.post(Uri.parse(baseUrl+'register'),
