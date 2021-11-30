@@ -1,69 +1,93 @@
+import 'package:book_bank/features/book_list.dart';
+import 'package:book_bank/features/globals.dart';
+import 'package:book_bank/features/login_page.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
-class BookPage extends StatelessWidget {
-  const BookPage({Key? key,this.username,this.bookId}) : super(key: key);
-  final String? username,bookId;
+import '../constants.dart';
+import 'book_ret.dart';
+import 'dropbar.dart';
 
+class BookPage extends StatefulWidget {
+  BookPage({Key? key, this.username, this.bookId}) : super(key: key);
+  final String? username, bookId;
+
+  @override
+  _BookPageState createState() => _BookPageState();
+}
+
+class _BookPageState extends State<BookPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Center(
-          child: Text(
-            'Welcome',
-            style: TextStyle(
-              fontSize: 24,
-              fontFamily: 'Pacifico',
-              color: Colors.black,
+        appBar: AppBar(
+          title: Center(
+            child: Text(
+              'Welcome $uname',
+              style: TextStyle(
+                fontSize: 24,
+                fontFamily: 'Pacifico',
+                color: Colors.black,
+              ),
             ),
           ),
+          actions: [
+            IconButton(
+                onPressed: () {
+                  // gBookAlert(context);
+                  Navigator.pushReplacement(context,
+                      MaterialPageRoute(builder: (context) => getBookList()));
+                },
+                icon: Icon(
+                  Icons.book,
+                  color: Colors.black,
+                  size: 30.0,
+                )),
+            SizedBox(
+              width: 15,
+            ),
+            IconButton(
+                onPressed: () {
+                  userAlert(context);
+                },
+                icon: Icon(
+                  Icons.person,
+                  color: Colors.black,
+                  size: 30.0,
+                )),
+          ],
+          backgroundColor: Color(0xFFDC143C),
         ),
-        actions: [
-          IconButton(
-              onPressed: () {
-
-              },
-              icon: Icon(
-                Icons.book,
-                color: Colors.black,
-                size: 30.0,
-              )),
-          SizedBox(
-            width: 15,
-          ),
-          IconButton(
-              onPressed: () {
-                userAlert(context);
-              },
-              icon: Icon(
-                Icons.person,
-                color: Colors.black,
-                size: 30.0,
-              )),
-        ],
-        backgroundColor: Colors.orange.shade200,
-      ),
-      body: SizedBox.shrink()
-      // Padding(
-      //   padding: const EdgeInsets.all(15.0),
-      //   child: GridView.count(
-      //     crossAxisCount: 4,
-      //     crossAxisSpacing: 5,
-      //     mainAxisSpacing: 10,
-      //     scrollDirection: Axis.vertical,
-      //     children: [
-      //       BookCard(imageUrl: 'https://storage.googleapis.com/lr-assets/_nielsen/400/9780141325545.jpg', bname: 'A Tale of Two Cities', author: 'Charles Dickens',),
-      //       BookCard(imageUrl: 'https://storage.googleapis.com/lr-assets/_nielsen/400/9780141325545.jpg', bname: 'A Tale of Two Cities', author: 'Charles Dickens',),
-      //       BookCard(imageUrl: 'https://storage.googleapis.com/lr-assets/_nielsen/400/9780141325545.jpg', bname: 'A Tale of Two Cities', author: 'Charles Dickens',),
-      //       BookCard(imageUrl: 'https://storage.googleapis.com/lr-assets/_nielsen/400/9780141325545.jpg', bname: 'A Tale of Two Cities', author: 'Charles Dickens',),
-      //       BookCard(imageUrl: 'https://storage.googleapis.com/lr-assets/_nielsen/400/9780141325545.jpg', bname: 'A Tale of Two Cities', author: 'Charles Dickens',),
-      //       BookCard(imageUrl: 'https://storage.googleapis.com/lr-assets/_nielsen/400/9780141325545.jpg', bname: 'A Tale of Two Cities', author: 'Charles Dickens',),
-      //       BookCard(imageUrl: 'https://storage.googleapis.com/lr-assets/_nielsen/400/9780141325545.jpg', bname: 'A Tale of Two Cities', author: 'Charles Dickens',),
-      //       BookCard(imageUrl: 'https://storage.googleapis.com/lr-assets/_nielsen/400/9780141325545.jpg', bname: 'A Tale of Two Cities', author: 'Charles Dickens',)
-      //     ],
-      //   ),
-      // ),
-    );
+        body:
+            // SizedBox.shrink()
+            FutureBuilder(
+                future: getPost(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<List<RetriveBook>> snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    return Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: GridView.count(
+                        crossAxisCount:
+                            (MediaQuery.of(context).size.width - 80) ~/
+                                (snapshot.data!.length * 80),
+                        mainAxisSpacing: 20,
+                        scrollDirection: Axis.vertical,
+                        shrinkWrap: true,
+                        children: snapshot.data!.map((reminder) {
+                          return BookCard(
+                            bname: reminder.bookName,
+                            author: reminder.bookAuth,
+                            imageUrl: reminder.bookImg,
+                            isTaken: true,
+                          );
+                        }).toList(),
+                      ),
+                    );
+                  } else {
+                    return Center(child: CircularProgressIndicator());
+                  }
+                }));
   }
 }
 
@@ -168,7 +192,7 @@ void addAlert(BuildContext context) {
   );
 
   showDialog(
-    barrierDismissible: false,
+      barrierDismissible: false,
       context: context,
       builder: (BuildContext context) {
         return aalert;
@@ -178,34 +202,31 @@ void addAlert(BuildContext context) {
 void userAlert(BuildContext context) {
   var ualert = AlertDialog(
     title: Container(
-        height: 120.0,
-        width: 120.0,
-        decoration: BoxDecoration(
-          color: Colors.orange.shade200,
-          shape: BoxShape.circle,
-          image: DecorationImage(
-              image: AssetImage('images/Profile.png'),
-              fit: BoxFit.fitHeight,
-          ),
+      height: 120.0,
+      width: 120.0,
+      decoration: BoxDecoration(
+        color: Colors.orange.shade200,
+        shape: BoxShape.circle,
+        image: DecorationImage(
+          image: AssetImage('images/Profile.png'),
+          fit: BoxFit.fitHeight,
         ),
+      ),
     ),
     content: Padding(
       padding: const EdgeInsets.only(left: 10.0, top: 15),
-      child: TextField(
-        obscureText: false,
-        cursorColor: Color(0xFF7E7E7E),
-        decoration: InputDecoration(
-          fillColor: Colors.white,
-          filled: true,
-          border: OutlineInputBorder(),
-          labelText: 'Username',
-          labelStyle: TextStyle(
-            fontFamily: 'Lobster',
-            fontSize: 20.0,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF7E7E7E),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            'User: $uname',
+            style: TextStyle(
+              fontSize: 24,
+              fontFamily: 'Pacifico',
+              color: Colors.black,
+            ),
           ),
-        ),
+        ],
       ),
     ),
     actions: [
@@ -219,7 +240,8 @@ void userAlert(BuildContext context) {
           ),
           onPressed: () {
             Navigator.pop(context, 'userAlert');
-            Navigator.pushReplacementNamed(context, 'loginPage');
+            Navigator.pushReplacement(
+                context, MaterialPageRoute(builder: (context) => LoginPage()));
           },
           child: Text(
             'Log Out',
@@ -240,109 +262,108 @@ void userAlert(BuildContext context) {
 }
 
 class BookCard extends StatelessWidget {
-  BookCard({Key? key,this.imageUrl,this.bname,this.author}) : super(key: key);
-  final String? imageUrl,bname,author;
+  BookCard(
+      {Key? key, this.imageUrl, this.bname, this.author, this.isTaken = false})
+      : super(key: key);
+  final String? imageUrl, bname, author;
+  final bool isTaken;
 
   @override
   Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: () {
-        buyAlert(context);
-      },
-      child: Container(
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(10)),
-            color: Colors.orange.shade200),
-        width: 250,
-        height: 400,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(
-                  top: 30.0, bottom: 15.0),
-              child: Container(
-                width: 150,
-                height: 200,
-                decoration: BoxDecoration(
-                  borderRadius:
-                  BorderRadius.all(Radius.circular(10)),
-                  image: DecorationImage(
-                      image: NetworkImage(imageUrl??'https://leadershiftinsights.com/wp-content/uploads/2019/07/no-book-cover-available.jpg'),
-                      fit: BoxFit.cover
-                  ),
+    return Stack(children: [
+      TextButton(
+        onPressed: () {
+          buyAlert(context);
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 15.0),
+          child: Card(
+            color: Colors.orange.shade200,
+            borderOnForeground: true,
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 20,
                 ),
-              ),
-            ),
-            SizedBox(
-              width: 150,
-              child: Divider(
-                color: Colors.white,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 20.0),
-              child: Container(
-                height: 80,
-                child: Card(
-                  color: Colors.white,
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding:
-                        const EdgeInsets.only(top: 8.0),
-                        child: Row(
-                          mainAxisAlignment:
-                          MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Name: ',
-                              style: TextStyle(
-                                  color: Colors.black,
-                                  fontFamily: 'Pacifico',
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              bname??'N/A',
-                              style: TextStyle(
-                                  color: Colors.lightBlue,
-                                  fontFamily: 'Pacifico',
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Row(
-                        mainAxisAlignment:
-                        MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Author: ',
-                            style: TextStyle(
-                                color: Colors.black,
-                                fontFamily: 'Pacifico',
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            author??'N/A',
-                            style: TextStyle(
-                                color: Colors.lightBlue,
-                                fontFamily: 'Pacifico',
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                Expanded(
+                  child: Image(
+                      image: NetworkImage(imageUrl ??
+                          'https://leadershiftinsights.com/wp-content/uploads/2019/07/no-book-cover-available.jpg')),
                 ),
-              ),
+                SizedBox(
+                  height: 20,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Name: ',
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontFamily: 'Pacifico',
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      bname ?? 'N/A',
+                      style: TextStyle(
+                          color: Colors.lightBlue,
+                          fontFamily: 'Pacifico',
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Author: ',
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontFamily: 'Pacifico',
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      author ?? 'N/A',
+                      style: TextStyle(
+                          color: Colors.lightBlue,
+                          fontFamily: 'Pacifico',
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
-    );
+      isTaken == true
+          ? Center(
+              child: Container(
+                  width: 100,
+                  height: 100,
+                  color: Colors.white,
+                  child: Center(
+                      child: Text(
+                    'Taken',
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Pacifico',
+                    ),
+                  ))),
+            )
+          : SizedBox(),
+    ]);
   }
+}
+
+Future<List<RetriveBook>> getPost() async {
+  var url = Uri.parse('${baseUrl}getAllBooks');
+  final response = await http.get(url);
+  print(response.body);
+  return retriveBookFromJson(response.body);
 }

@@ -1,3 +1,4 @@
+import 'package:book_bank/features/book_page.dart';
 import 'package:flutter/material.dart';
 
 class UserPage extends StatelessWidget {
@@ -11,15 +12,16 @@ class UserPage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: TextButton(
-            onPressed: (){
-              Navigator.pushReplacementNamed(context, 'bookPage');
+            onPressed: () {
+              Navigator.pushReplacement(
+                  context, MaterialPageRoute(builder: (context) => BookPage()));
             },
-            child: Icon(Icons.arrow_back_ios,color: Colors.black)),
+            child: Icon(Icons.arrow_back_ios, color: Colors.black)),
       ),
       body: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-            borderRadius: BorderRadius.all(Radius.circular(10)),
+          borderRadius: BorderRadius.all(Radius.circular(10)),
         ),
         width: 500,
         height: 500,

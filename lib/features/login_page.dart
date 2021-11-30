@@ -1,4 +1,5 @@
 import 'package:book_bank/features/book_page.dart';
+import 'package:book_bank/features/globals.dart';
 import 'package:book_bank/features/register_page.dart';
 import 'package:cool_alert/cool_alert.dart';
 import 'package:dio/dio.dart';
@@ -99,8 +100,11 @@ class LoginPage extends StatelessWidget {
                               padding: const EdgeInsets.only(left: 35.0),
                               child: TextButton(
                                 onPressed: () {
-                                  Navigator.pushReplacementNamed(
-                                      context, 'registerPage');
+                                  Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              RegisterPage()));
                                 },
                                 child: Text(
                                   'Register?',
@@ -171,14 +175,16 @@ class LoginPage extends StatelessWidget {
 Future<bool> loginUser(String name) async {
   var dio = Dio();
   var response;
+  uname = name;
   try {
-    response = await dio.get(baseUrl + 'login/' + name);
+    changedUrl = baseUrl + 'login/' + name;
+    response = await dio.get(changedUrl);
     print(response);
   } catch (e) {
     return false;
   }
   if (response.statusCode == 200 &&
       !response.data.isEmpty &&
-      !response.data.containsKey('message')) return true;
+      !response.data.first.containsKey('message')) return true;
   return false;
 }

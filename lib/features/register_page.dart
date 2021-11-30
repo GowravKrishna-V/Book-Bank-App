@@ -1,12 +1,14 @@
 import 'dart:io';
 
 import 'package:book_bank/constants.dart';
+import 'package:book_bank/features/login_page.dart';
 import 'package:cool_alert/cool_alert.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 
 import 'book_page.dart';
+import 'globals.dart';
 
 class RegisterPage extends StatelessWidget {
   RegisterPage({Key? key}) : super(key: key);
@@ -128,8 +130,10 @@ class RegisterPage extends StatelessWidget {
                                   const EdgeInsets.symmetric(horizontal: 34.0),
                               child: TextButton(
                                 onPressed: () {
-                                  Navigator.pushReplacementNamed(
-                                      context, 'loginPage');
+                                  Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => LoginPage()));
                                 },
                                 child: Text(
                                   'Login?',
@@ -213,6 +217,7 @@ class RegisterPage extends StatelessWidget {
 Future<bool> registerUser(String name, String password) async {
   var dio = Dio();
   var response;
+  uname = name;
   try {
     response = await dio.post(
       baseUrl + 'register',
@@ -225,25 +230,9 @@ Future<bool> registerUser(String name, String password) async {
   } catch (e) {
     return false;
   }
-  if (response.statusCode == 200 &&
-      !response.data.isEmpty &&
-      !response.data.containsKey('message')) return true;
+  if (response.statusCode == 200 && !response.data.isEmpty) return true;
   return false;
 }
-
-// if(passwordController.text == cpasswordController.text){
-// http.post(Uri.parse(baseUrl+'register'),
-// headers: {"Content-type": "application/json"},
-// body:"{'username':usernameController.text,'password':passwordController.text}",
-// ).then((res){
-// if(res.statusCode==200){
-// final message = jsonDecode(res.body);
-// print(message);
-// Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>BookPage(username: message['username'],)));
-// }
-// }
-// );
-// }
 
 // Future<void> makePostRequest() async {
 //   final url = Uri.parse(baseUrl+'register');
