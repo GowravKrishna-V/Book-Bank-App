@@ -1,15 +1,13 @@
-import 'dart:ui';
-
 import 'package:book_bank/features/login_page.dart';
-import 'package:book_bank/features/register_page.dart';
-import 'package:book_bank/features/user_page.dart';
+import 'package:book_bank/providers/name_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'features/book_page.dart';
+final userProvider = Provider((_) => User());
 
 void main() {
-  runApp(MyApp());
+  runApp(ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -19,12 +17,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: RegisterPage(),
-      // routes: {
-      //   'loginPage':(context)=>LoginPage(),
-      //   'registerPage':(context)=> RegisterPage(),
-      //   'bookPage':(context)=>BookPage(),
-      // },
+      home: LoginPage(),
     );
   }
 }

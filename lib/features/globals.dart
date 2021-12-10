@@ -1,2 +1,0 @@
-String changedUrl = '';
-String uname = '';

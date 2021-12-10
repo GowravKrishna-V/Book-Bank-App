@@ -1,14 +1,16 @@
+import 'package:blur/blur.dart';
 import 'package:book_bank/features/book_list.dart';
-import 'package:book_bank/features/globals.dart';
 import 'package:book_bank/features/login_page.dart';
+import 'package:book_bank/main.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
 import '../constants.dart';
 import 'book_ret.dart';
 import 'dropbar.dart';
 
-class BookPage extends StatefulWidget {
+class BookPage extends ConsumerStatefulWidget {
   BookPage({Key? key, this.username, this.bookId}) : super(key: key);
   final String? username, bookId;
 
@@ -16,18 +18,18 @@ class BookPage extends StatefulWidget {
   _BookPageState createState() => _BookPageState();
 }
 
-class _BookPageState extends State<BookPage> {
+class _BookPageState extends ConsumerState<BookPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
           title: Center(
             child: Text(
-              'Welcome $uname',
+              'Welcome ${ref.read(userProvider).name}',
               style: TextStyle(
                 fontSize: 24,
                 fontFamily: 'Pacifico',
-                color: Colors.black,
+                color: Colors.white,
               ),
             ),
           ),
@@ -40,7 +42,7 @@ class _BookPageState extends State<BookPage> {
                 },
                 icon: Icon(
                   Icons.book,
-                  color: Colors.black,
+                  color: Colors.white,
                   size: 30.0,
                 )),
             SizedBox(
@@ -48,11 +50,11 @@ class _BookPageState extends State<BookPage> {
             ),
             IconButton(
                 onPressed: () {
-                  userAlert(context);
+                  userAlert(context, ref);
                 },
                 icon: Icon(
                   Icons.person,
-                  color: Colors.black,
+                  color: Colors.white,
                   size: 30.0,
                 )),
           ],
@@ -79,7 +81,8 @@ class _BookPageState extends State<BookPage> {
                             bname: reminder.bookName,
                             author: reminder.bookAuth,
                             imageUrl: reminder.bookImg,
-                            isTaken: true,
+                            bokid: reminder.bookId,
+                            // isTaken: false,
                           );
                         }).toList(),
                       ),
@@ -98,6 +101,7 @@ void buyAlert(BuildContext context) {
       'Alert',
       style: TextStyle(
         fontFamily: 'Pacifico',
+        color: Color(0xFFDC143C),
       ),
     )),
     content: Padding(
@@ -116,7 +120,13 @@ void buyAlert(BuildContext context) {
             onPrimary: Colors.black,
           ),
           onPressed: () {
-            addAlert(context);
+            var isTaken;
+            if (isTaken == false) {
+              addAlert(context);
+            } else {
+              Navigator.pop(context, 'buyAlert');
+              cbuyAlert(context);
+            }
           },
           child: Text(
             'Yes',
@@ -151,6 +161,30 @@ void buyAlert(BuildContext context) {
       context: context,
       builder: (BuildContext context) {
         return alert;
+      });
+}
+
+void cbuyAlert(BuildContext context) {
+  var cnalert = AlertDialog(
+    title: Icon(
+      Icons.sentiment_dissatisfied_outlined,
+      color: Colors.yellow,
+      size: 40,
+    ),
+    content: Padding(
+      padding: const EdgeInsets.only(left: 12.0),
+      child: Text(
+        'Cannot take more than one book at a time',
+        style: TextStyle(fontWeight: FontWeight.bold),
+      ),
+    ),
+  );
+
+  showDialog(
+      barrierDismissible: true,
+      context: context,
+      builder: (BuildContext context) {
+        return cnalert;
       });
 }
 
@@ -199,7 +233,7 @@ void addAlert(BuildContext context) {
       });
 }
 
-void userAlert(BuildContext context) {
+void userAlert(BuildContext context, WidgetRef ref) {
   var ualert = AlertDialog(
     title: Container(
       height: 120.0,
@@ -219,7 +253,7 @@ void userAlert(BuildContext context) {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            'User: $uname',
+            'User: ${ref.read(userProvider).name}',
             style: TextStyle(
               fontSize: 24,
               fontFamily: 'Pacifico',
@@ -261,109 +295,188 @@ void userAlert(BuildContext context) {
       });
 }
 
-class BookCard extends StatelessWidget {
-  BookCard(
-      {Key? key, this.imageUrl, this.bname, this.author, this.isTaken = false})
+class BookCard extends ConsumerWidget {
+  BookCard({Key? key, this.imageUrl, this.bname, this.author, this.bokid})
       : super(key: key);
-  final String? imageUrl, bname, author;
-  final bool isTaken;
+  final String? imageUrl, bname, author, bokid;
+  var isTaken;
 
   @override
-  Widget build(BuildContext context) {
-    return Stack(children: [
-      TextButton(
-        onPressed: () {
-          buyAlert(context);
-        },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 15.0),
-          child: Card(
-            color: Colors.orange.shade200,
-            borderOnForeground: true,
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 20,
-                ),
-                Expanded(
-                  child: Image(
-                      image: NetworkImage(imageUrl ??
-                          'https://leadershiftinsights.com/wp-content/uploads/2019/07/no-book-cover-available.jpg')),
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Name: ',
-                      style: TextStyle(
-                          color: Colors.black,
-                          fontFamily: 'Pacifico',
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold),
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (bokid != null) {
+      isTaken = true;
+    }
+    return bokid == ref.read(userProvider).bid
+        ? Stack(children: [
+            Blur(
+              blur: 4,
+              child: TextButton(
+                onPressed: () {
+                  buyAlert(context);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 15.0),
+                  child: Card(
+                    color: Colors.orange.shade200,
+                    borderOnForeground: true,
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: 20,
+                        ),
+                        Expanded(
+                          child: Image(
+                              image: NetworkImage(imageUrl ??
+                                  'https://leadershiftinsights.com/wp-content/uploads/2019/07/no-book-cover-available.jpg')),
+                        ),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Name: ',
+                              style: TextStyle(
+                                  color: Colors.black,
+                                  fontFamily: 'Pacifico',
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              bname ?? 'N/A',
+                              style: TextStyle(
+                                  color: Colors.lightBlue,
+                                  fontFamily: 'Pacifico',
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Author: ',
+                              style: TextStyle(
+                                  color: Colors.black,
+                                  fontFamily: 'Pacifico',
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              author ?? 'N/A',
+                              style: TextStyle(
+                                  color: Colors.lightBlue,
+                                  fontFamily: 'Pacifico',
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                    Text(
-                      bname ?? 'N/A',
-                      style: TextStyle(
-                          color: Colors.lightBlue,
-                          fontFamily: 'Pacifico',
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ],
+                  ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Author: ',
-                      style: TextStyle(
-                          color: Colors.black,
-                          fontFamily: 'Pacifico',
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      author ?? 'N/A',
-                      style: TextStyle(
-                          color: Colors.lightBlue,
-                          fontFamily: 'Pacifico',
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ),
-      isTaken == true
-          ? Center(
+            Center(
               child: Container(
+                  decoration: BoxDecoration(
+                      color: Color(0xFFDC143C),
+                      border: Border.all(
+                        color: Color(0xFFDC143C),
+                      ),
+                      borderRadius: BorderRadius.all(Radius.circular(20))),
                   width: 100,
                   height: 100,
-                  color: Colors.white,
                   child: Center(
                       child: Text(
                     'Taken',
                     style: TextStyle(
+                      color: Colors.white,
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Pacifico',
                     ),
                   ))),
             )
-          : SizedBox(),
-    ]);
+          ])
+        : TextButton(
+            onPressed: () {
+              buyAlert(context);
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 15.0),
+              child: Card(
+                color: Colors.orange.shade200,
+                borderOnForeground: true,
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Expanded(
+                      child: Image(
+                          image: NetworkImage(imageUrl ??
+                              'https://leadershiftinsights.com/wp-content/uploads/2019/07/no-book-cover-available.jpg')),
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Name: ',
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontFamily: 'Pacifico',
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          bname ?? 'N/A',
+                          style: TextStyle(
+                              color: Colors.lightBlue,
+                              fontFamily: 'Pacifico',
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Author: ',
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontFamily: 'Pacifico',
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          author ?? 'N/A',
+                          style: TextStyle(
+                              color: Colors.lightBlue,
+                              fontFamily: 'Pacifico',
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
   }
 }
 
 Future<List<RetriveBook>> getPost() async {
   var url = Uri.parse('${baseUrl}getAllBooks');
   final response = await http.get(url);
-  print(response.body);
+  // print(response.body);
   return retriveBookFromJson(response.body);
 }

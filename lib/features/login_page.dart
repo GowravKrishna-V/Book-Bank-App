@@ -1,17 +1,18 @@
 import 'package:book_bank/features/book_page.dart';
-import 'package:book_bank/features/globals.dart';
 import 'package:book_bank/features/register_page.dart';
+import 'package:book_bank/main.dart';
 import 'package:cool_alert/cool_alert.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../constants.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends ConsumerWidget {
   const LoginPage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final nameController = TextEditingController();
     return Container(
       decoration: BoxDecoration(
@@ -97,7 +98,7 @@ class LoginPage extends StatelessWidget {
                         Row(
                           children: [
                             Padding(
-                              padding: const EdgeInsets.only(left: 35.0),
+                              padding: const EdgeInsets.all(15),
                               child: TextButton(
                                 onPressed: () {
                                   Navigator.pushReplacement(
@@ -117,8 +118,9 @@ class LoginPage extends StatelessWidget {
                                 ),
                               ),
                             ),
+                            Expanded(child: SizedBox.shrink()),
                             Padding(
-                              padding: const EdgeInsets.only(left: 166.0),
+                              padding: const EdgeInsets.all(15),
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   padding: EdgeInsets.symmetric(
@@ -127,13 +129,18 @@ class LoginPage extends StatelessWidget {
                                   onPrimary: Colors.black,
                                 ),
                                 onPressed: () =>
-                                    loginUser(nameController.text).then(
+                                    loginUser(nameController.text, ref).then(
                                   (value) => {
                                     if (value)
-                                      Navigator.pushReplacement(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) => BookPage()))
+                                      {
+                                        ref.read(userProvider).name =
+                                            nameController.text,
+                                        Navigator.pushReplacement(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    BookPage()))
+                                      }
                                     else
                                       CoolAlert.show(
                                         backgroundColor: Colors.orange.shade200,
@@ -172,19 +179,20 @@ class LoginPage extends StatelessWidget {
   }
 }
 
-Future<bool> loginUser(String name) async {
+Future<bool> loginUser(String name, ref) async {
   var dio = Dio();
   var response;
-  uname = name;
   try {
-    changedUrl = baseUrl + 'login/' + name;
-    response = await dio.get(changedUrl);
-    print(response);
+    response = await dio.get(baseUrl + 'login/' + name);
   } catch (e) {
     return false;
   }
   if (response.statusCode == 200 &&
       !response.data.isEmpty &&
-      !response.data.first.containsKey('message')) return true;
+      !response.data.first.containsKey('message')) {
+    final bkid = ref.read(userProvider).bid = response.data.first['book_id'];
+    return true;
+  }
+
   return false;
 }

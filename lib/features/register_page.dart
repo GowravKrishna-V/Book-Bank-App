@@ -5,19 +5,20 @@ import 'package:book_bank/features/login_page.dart';
 import 'package:cool_alert/cool_alert.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:convert';
 
+import '../main.dart';
 import 'book_page.dart';
-import 'globals.dart';
 
-class RegisterPage extends StatelessWidget {
+class RegisterPage extends ConsumerWidget {
   RegisterPage({Key? key}) : super(key: key);
 
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
   final cpasswordController = TextEditingController();
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       decoration: BoxDecoration(
         image: DecorationImage(
@@ -126,8 +127,7 @@ class RegisterPage extends StatelessWidget {
                         Row(
                           children: [
                             Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 34.0),
+                              padding: const EdgeInsets.all(15),
                               child: TextButton(
                                 onPressed: () {
                                   Navigator.pushReplacement(
@@ -146,8 +146,9 @@ class RegisterPage extends StatelessWidget {
                                 ),
                               ),
                             ),
+                            Expanded(child: SizedBox.shrink()),
                             Padding(
-                              padding: const EdgeInsets.only(left: 160.0),
+                              padding: const EdgeInsets.all(15),
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   padding: EdgeInsets.symmetric(
@@ -168,11 +169,15 @@ class RegisterPage extends StatelessWidget {
                                             passwordController.text)
                                         .then((value) => {
                                               if (value)
-                                                Navigator.pushReplacement(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            BookPage()))
+                                                {
+                                                  ref.read(userProvider).name =
+                                                      usernameController.text,
+                                                  Navigator.pushReplacement(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              BookPage()))
+                                                }
                                               else
                                                 CoolAlert.show(
                                                   backgroundColor:
@@ -217,7 +222,6 @@ class RegisterPage extends StatelessWidget {
 Future<bool> registerUser(String name, String password) async {
   var dio = Dio();
   var response;
-  uname = name;
   try {
     response = await dio.post(
       baseUrl + 'register',
@@ -226,19 +230,10 @@ Future<bool> registerUser(String name, String password) async {
       }),
       data: jsonEncode({'username': name, 'password': password}),
     );
-    print(response);
+    // print(response);
   } catch (e) {
     return false;
   }
   if (response.statusCode == 200 && !response.data.isEmpty) return true;
   return false;
 }
-
-// Future<void> makePostRequest() async {
-//   final url = Uri.parse(baseUrl+'register');
-//   final headers = {"Content-type": "application/json"};
-//   final json = '{"username":usernameController.text, "password":passwordController.text}';
-//   final response = await post(url, headers: headers, body: json);
-//   print('Status code: ${response.statusCode}');
-//   print('Body: ${response.body}');
-// }
